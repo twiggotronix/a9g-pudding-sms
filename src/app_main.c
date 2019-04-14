@@ -17,6 +17,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include <pcre.h>
 
 #include "api_sms.h"
 #include "api_hal_uart.h"
@@ -92,10 +93,10 @@ void SendSMS(uint8_t message[])
     OS_Free(unicode);
 }
 
-void messageRecieved(uint8_t* header, uint8_t* content)
+void messageRecieved(uint8_t* content)
 {
     char buffer[200];
-    snprintf(buffer, sizeof(buffer), "Message received from %s : %s", header, content);
+    snprintf(buffer, sizeof(buffer), "Message received : %s", content);
     SendSMS(buffer);
     Trace(1, buffer);
     OS_Free(buffer);
@@ -122,14 +123,6 @@ void ServerCenterTest()
         Trace(1,"SMS_SetServerCenterInfo fail");
     else
         Trace(1,"SMS_SetServerCenterInfo success");
-}
-
-void LoopTask(VOID *pData)
-{
-    while(1)
-    {
-        OS_Sleep(1000);
-    }
 }
 
 void EventDispatch(API_Event_t* pEvent)
@@ -161,35 +154,8 @@ void EventDispatch(API_Event_t* pEvent)
 
             Trace(2,"message header:%s",header);
             Trace(2,"message content length:%d",contentLength);
-            messageRecieved(header, content);
-            /*
-            if(encodeType == SMS_ENCODE_TYPE_ASCII)
-            {
-                Trace(2,"message content:%s",content);
-                UART_Write(UART1,content,contentLength);
-            }
-            else
-            {
-                uint8_t tmp[500];
-                memset(tmp,0,500);
-                for(int i=0;i<contentLength;i+=2)
-                    sprintf(tmp+strlen(tmp),"\\u%02x%02x",content[i],content[i+1]);
-                Trace(2,"message content(unicode):%s",tmp);//you can copy this string to http://tool.chinaz.com/tools/unicode.aspx and display as Chinese
-                uint8_t* gbk = NULL;
-                uint32_t gbkLen = 0;
-                if(!SMS_Unicode2LocalLanguage(content,contentLength,CHARSET_CP936,&gbk,&gbkLen))
-                    Trace(10,"convert unicode to GBK fail!");
-                else
-                {
-                    memset(tmp,0,500);
-                    for(int i=0;i<gbkLen;i+=2)
-                        sprintf(tmp+strlen(tmp),"%02x%02x ",gbk[i],gbk[i+1]);
-                    Trace(2,"message content(GBK):%s",tmp);//you can copy this string to http://m.3158bbs.com/tool-54.html# and display as Chinese
-                    UART_Write(UART1,gbk,gbkLen);//use serial tool that support GBK decode if have Chinese, eg: https://github.com/Neutree/COMTool
-                }
-                OS_Free(gbk);
-            }
-            */
+            messageRecieved(content);
+            
             break;
         case API_EVENT_ID_SMS_LIST_MESSAGE:
         {
@@ -236,11 +202,7 @@ void AppMainTask(void *pData)
 {
     API_Event_t* event=NULL;
 
-    Init();
-    /*
-    otherTaskHandle = OS_CreateTask(LoopTask ,
-        NULL, NULL, AppMain_TASK_STACK_SIZE, AppMain_TASK_PRIORITY, 0, 0, "ohter Task");
-    */    
+    Init(); 
     while(1)
     {
         if(OS_WaitEvent(mainTaskHandle, &event, OS_TIME_OUT_WAIT_FOREVER))
