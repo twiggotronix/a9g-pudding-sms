@@ -17,7 +17,6 @@
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include <pcre.h>
 
 #include "api_sms.h"
 #include "api_hal_uart.h"
@@ -97,9 +96,8 @@ void messageRecieved(uint8_t* content)
 {
     char buffer[200];
     snprintf(buffer, sizeof(buffer), "Message received : %s", content);
-    SendSMS(buffer);
     Trace(1, buffer);
-    OS_Free(buffer);
+    SendSMS(buffer);
 }
 
 void ServerCenterTest()
