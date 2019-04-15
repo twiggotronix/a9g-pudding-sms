@@ -27,7 +27,6 @@
 HANDLE mainTaskHandle  = NULL;
 HANDLE otherTaskHandle = NULL;
 
-#define PHONE_NUMBER "0033673128710"
 static uint8_t flag = 0;
 
 void SMSInit()
@@ -180,7 +179,7 @@ void EventDispatch(API_Event_t* pEvent)
     if(flag == 3)
     {
         SMS_Storage_Info_t storageInfo;
-        SendSMS("Up and ready!");
+        SendSMS("Ready and able!");
         ServerCenterTest();
         SMS_GetStorageInfo(&storageInfo,SMS_STORAGE_SIM_CARD);
         Trace(1,"sms storage sim card info, used:%d,total:%d",storageInfo.used,storageInfo.total);
